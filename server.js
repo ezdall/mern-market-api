@@ -18,6 +18,8 @@ const { UrlError } = require('./helpers/url.error');
 
 const { authRoute } = require('./routes/auth.route');
 const { userRoute } = require('./routes/user.route');
+// const { productRoute } = require('./routes/product.route')
+const { shopRoute } = require('./routes/shop.route')
 
 connectMDB().catch(err => console.error('connect-MongoDB Error', err.stack));
 
@@ -32,10 +34,10 @@ app.use(express.json()); // parse req.body
 app.use(cookieParser()); // parse req.cookies
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/', express.static(path.join(__dirname, 'views')));
+app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
 app.use('/auth', authRoute)
-app.use('/api', [userRoute]);
+app.use('/api', [userRoute, shopRoute]);
 
 app.all('*', (req, res, next) => {
   const error = new UrlError(`${req.ip} tried to access ${req.originalUrl}`);
