@@ -137,10 +137,21 @@ const logout = async (req, res, next) =>{
 
 // checks and decoder of "Bearer xxx" req.headers.authorization
 // then "Mount" data to req.auth
-const requireLogin = expressJwt({
-	secret: process.env.ACCESS_SECRET,
-	algorithms: ['HS256'],
-	requestProperty: 'auth'
-})
+// const requireLogin = expressJwt({
+// 	secret: process.env.ACCESS_SECRET,
+// 	algorithms: ['HS256'],
+// 	requestProperty: 'auth'
+// })
 
-module.exports = { login, register, logout,  requireLogin }
+// temp
+const requireLogin = (req,res,next) =>{
+	console.log('-requireLogin-')
+	return next()
+}
+
+const hasAuth =(req, res, next) => {
+	console.log('-hasAuth-')
+	return next()
+}
+
+module.exports = { login, register, logout, hasAuth, requireLogin }

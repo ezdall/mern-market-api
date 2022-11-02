@@ -17,6 +17,7 @@ const { errorHandler } = require('./helpers/error-handler');
 const { UrlError } = require('./helpers/url.error');
 
 const { authRoute } = require('./routes/auth.route');
+const { userRoute } = require('./routes/user.route');
 
 connectMDB().catch(err => console.error('connect-MongoDB Error', err.stack));
 
@@ -34,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/', express.static(path.join(__dirname, 'views')));
 
 app.use('/auth', authRoute)
-// app.use('/api', []);
+app.use('/api', [userRoute]);
 
 app.all('*', (req, res, next) => {
   const error = new UrlError(`${req.ip} tried to access ${req.originalUrl}`);
