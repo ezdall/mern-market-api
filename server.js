@@ -1,4 +1,4 @@
-require('express-async-errors');
+/auth.route// require('express-async-errors');
 require('dotenv').config({
   path: './config/config.env'
 });
@@ -16,7 +16,7 @@ const { corsOptions } = require('./config/cors-options');
 const { errorHandler } = require('./helpers/error-handler');
 const { UrlError } = require('./helpers/url.error');
 
-const { rootRoute } = require('./routes');
+const { authRoute } = require('./routes/auth.route');
 
 connectMDB().catch(err => console.error('connect-MongoDB Error', err.stack));
 
@@ -33,7 +33,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/', express.static(path.join(__dirname, 'views')));
 
-app.use('/', rootRoute);
+app.use('/auth', authRoute)
+// app.use('/api', []);
 
 app.all('*', (req, res, next) => {
   const error = new UrlError(`${req.ip} tried to access ${req.originalUrl}`);
