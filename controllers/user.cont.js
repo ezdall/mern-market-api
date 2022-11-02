@@ -1,39 +1,112 @@
+const mongoose = require('mongoose')
+const _ = require('lodash')
+const { genSalt, hash} = require('bcrypt')
+
+// model
+const User = require('../models/user.model');
+
+// helper
+const { BadRequest400 } = require('../helpers/bad-request.error');
+const { Unauthorized401 } = require('../helpers/unauthorized.error');
+const { Forbidden403 } = require('../helpers/forbidden.error')
+const { NotFound404 } = require('../helpers/not-found.error');
 
 
 const read = (req,res,next) => {
-	const { userId } = req.params
-	console.log('read:')
+	const user = req.profile
 
-	return res.json(`read: ${userId}`)
+	user.password = undefined;
+	user.salt = undefined;
+
+	return res.json({ user: user.toObject() })
 }
 
-const list = (req, res, next) => {
-	console.log('user-list')
+const list = async (req, res, next) => {
+	try {
+    const users = await User.find().select('name email updated created').lean().exec()
 
-	return res.json('user-list')
+    if(!users?.length) return next(new NotFound404('no users @list'))
+
+    return res.json(users)
+  } catch (err) {
+    return next(err)
+  }
 }
 
-const update = (req, res, next) => {
-	const { userId } = req.params
-	console.log('update:')
+const update = async (req, res, next) => {
+	 try {
+	 	const { name, email, password, seller } = req.body
+    const user = req.profile
+    
+    if(!user) return next(new NotFound404('no user found @update'))
 
-	return res.json(`upd: ${userId}`)
+    // user = _.extend(user, req.body)
+    
+  	if(password){
+  		const salt = await genSalt();
+
+  		user.password = await hash(password, salt)
+  	}
+
+  	user.name = name || user.name;
+  	user.email = email || user.email;
+    user.seller = seller ?? user.seller;
+
+    await user.save()
+    
+    user.password = undefined
+    user.salt = undefined
+
+    res.json(user)
+  } catch (err) {
+   return next(err)
+  }
 }
 
-const remove = (req, res, next) => {
-	const { userId } = req.params
-	console.log('remove')
+const remove = async (req, res, next) => {
+ try {
+    const user = req.profile
 
-	return res.json(`del: ${userId}`)
+    if(!user) return next(new NotFound404('no user found @remove'))
+
+    const deletedUser = await user.deleteOne()
+
+    if(!deletedUser) return next(new BadRequest400('invalid delete user @remove'))
+
+    deletedUser.password = undefined
+    deletedUser.salt = undefined
+
+    res.json(deletedUser)
+  } catch (err) {
+    return next(err)
+  }
 }
 
+const userById = async (req, res, next, userId) => {
+	 try {
+	 	if(!userId || !mongoose.isValidObjectId(userId)){
+	 		return next(new BadRequest400('valid id is required @userById'))
+	 	}
 
-const userById = (req, res, next, userId) => {
+    const user = await User.findById(userId).exec()
 
-	// const { userId } = req.params
-	console.log('-user-by-id-', userId)
+    if (!user) return next(new NotFound404('User not found @userById'))
+    
+    req.profile = user
+
+    next()
+  } catch (err) {
+    return next(err)
+  }
+}
+
+const isSeller = (req, res, next) => {
+	const { seller } = req.profile
+	const isSeller = seller && typeof seller === 'boolean'
+
+	if(!isSeller) return next(new Forbidden403('user is not a seller @isSeller'))
 
 	return next()
 }
 
-module.exports = { read, list, update, remove, userById }
+module.exports = { read, list, update, remove, userById, isSeller }
