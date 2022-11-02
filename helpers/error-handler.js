@@ -1,5 +1,3 @@
-const path = require('path');
-const { logEvents } = require('../middlewares/logger');
 
 const errorHandler = (error, req, res, next) => {
   const status = error.statusCode || 500;
@@ -14,12 +12,6 @@ const errorHandler = (error, req, res, next) => {
   // console.error('| ==--- MyErrorStack ---== |:', error.stack);
   console.log({ error });
 
-  logEvents(
-    `${error.name ?? 'Error'}: ${error.message ?? ''}\t${req.method}\t${
-      req.url
-    }\t${req.headers.origin ?? ''}`,
-    'errLog.log'
-  );
 
   // if 'html'
   // if (req.accepts('html')) {
