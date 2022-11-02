@@ -42,4 +42,4 @@ userSchema.path('password').validate(function(v) {
   }
 }, null)
 
-module.exports = model('User', userSchema)
+module.exports = model('user', userSchema)
