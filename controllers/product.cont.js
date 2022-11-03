@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
+const path = require('path')
 const fs = require('fs');
 const _extend = require('lodash/extend');
-const formidable = require('formidable');
+const { IncomingForm } = require('formidable');
 
 const Product = require('../models/product.model')
 
@@ -14,17 +15,26 @@ const { NotFound404 } = require('../helpers/not-found.error');
 
 const create = async (req,res, next) => {
 
-	const form = new formidable.IncomingForm();
-	form.keepExtensions = true,
+	 if(!req.is('multipart/form-data')){
+    return next(new BadRequest400('invalid form @createProd'))
+   }
+
+	const form = new IncomingForm({
+		keepExtensions: true,
+		maxFileSize: 2*1024*1024 // 2mb
+	});
 
 	form.parse(req, async(err, fields, files) => {
 		if(err) return next(err)
 	 
 	 try {
 		const product = new Product(fields)
-	  product.shop = req.shop
+	  product.shop = req.shop._id
 
 	  if(files.image){
+	  	if(files.image?.size > 1000000){
+      	return next(new BadRequest400('max 2mb image size '))
+      }
 	  	product.image.data = fs.readFileSync(files.image.path)
       product.image.contentType = files.image.type
 	  }
@@ -77,27 +87,20 @@ const read = (req, res, next) => {
 	return res.json(prod)
 }
 
-const remove = async (req,res, next) => {
-try{
-    const product = req.product
-
-    if(!product) return next(new NotFound404('no product @delProd'))
-
-    const deletedProduct = await product.deleteOne()
-    
-    return res.json(deletedProduct)
- 
-  } catch (err) {
-    return next(err)
-  }
-}
-
 const update = (req,res, next) => {
-	const form = new formidable.IncomingForm();
-	form.keepExtensions = true
+
+	 if(!req.is('multipart/form-data')){
+    return next(new BadRequest400('invalid form @createProd'))
+   }
+
+	const form = new IncomingForm({
+		keepExtensions: true,
+		maxFileSize: 2*1024*1024 // 2mb
+	});
 
 	form.parse(req, async(err, fields, files) => {
 		if(err) return next(new BadRequest400('photo cant be uploaded @updateProd')) 
+
  try {
   let prod = req.product
 	prod = _extend(prod, fields)
@@ -119,7 +122,44 @@ const update = (req,res, next) => {
 	}
 
 	})
+}
 
+const remove = async (req,res, next) => {
+try{
+    const product = req.product
+
+    if(!product) return next(new NotFound404('no product @delProd'))
+
+    const deletedProduct = await product.deleteOne()
+    
+    return res.json(deletedProduct)
+ 
+  } catch (err) {
+    return next(err)
+  }
+}
+
+const productById = async (req, res, next, prodId) => {
+ try {
+ 	 	if(!prodId || !mongoose.isValidObjectId(prodId)){
+	 		return next(new BadRequest400('valid id is required @prodById'))
+	 	}
+
+	 	// console.log(prodId)
+
+    const product = await Product.findById(prodId)
+    		.populate({ path:'shop', select:'name' }).exec()
+   
+    if (!product) return next(new NotFound404("Product not found"))
+    
+    // mount
+    req.product = product
+    // must
+    next()
+
+  } catch (err) {
+    return next(err)
+  }
 }
 
 const listLatest = async (req, res, next) => {
@@ -137,9 +177,7 @@ const listLatest = async (req, res, next) => {
 
     res.json(products)
   } catch (err){
-    return res.status(400).json({
-      error: errorHandler.getErrorMessage(err)
-    })
+    return next(err)
   }
 }
 
@@ -201,38 +239,14 @@ const photo = (req, res, next) => {
 	return next()
 }
 
-const defaultPhoto = (req, res, next) => {
-	  // defaultImage is a path
-	return res.sendFile(process.cwd()+defaultImage)
-}
-
-const productById = async (req, res, next, prodId) => {
- try {
- 	 	if(!prodId || !mongoose.isValidObjectId(prodId)){
-	 		return next(new BadRequest400('valid id is required @prodById'))
-	 	}
-
-    const product = await Product.findById(prodId)
-    		.populate({ path:'shop', select:'name' }).exec()
-   
-    if (!product) return next(new NotFound404("Product not found"))
-    
-    // mount
-    req.product = product
-    // must
-    next()
-
-  } catch (err) {
-    return next(err)
-  }
+const defaultPhoto = (req, res,next) => {
+  return res.sendFile(path.resolve(__dirname, '..', 'dist', 'img', 'default.jpg'))
 }
 
 const decreaseQuantity = async(req, res, next) => {
-
 	return res.json('dec')
 }
 const increaseQuantity = async(req, res, next) => {
-
 	return res.json('inc')
 }
 

@@ -34,7 +34,7 @@ router.route('/product/:shopId/:productId')
 router.route('/product/image/:productId')
   .get(photo, defaultPhoto)
 
-router.route('/product/defaultphoto')
+router.route('/products/defaultphoto')
   .get(defaultPhoto)
 
 // 
