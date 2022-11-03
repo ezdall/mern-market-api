@@ -1,4 +1,3 @@
-
 const errorHandler = (error, req, res, next) => {
   const status = error.statusCode || 500;
 
@@ -11,19 +10,6 @@ const errorHandler = (error, req, res, next) => {
 
   // console.error('| ==--- MyErrorStack ---== |:', error.stack);
   console.log({ error });
-
-
-  // if 'html'
-  // if (req.accepts('html')) {
-  //   if (error.statusCode === 404) {
-  //     return res
-  //       .status(status)
-  //       .sendFile(path.join(__dirname, '..', 'views', '404.html'));
-  //   }
-  //   return res
-  //     .status(status)
-  //     .sendFile(path.join(__dirname, '..', 'views', '500.html'));
-  // }
 
   // sent to default express errorHandler
   // can trigger if two res. ex. res.render() and res.json()
@@ -62,10 +48,10 @@ const errorHandler = (error, req, res, next) => {
     console.log('--Mongoose Error--');
   }
 
-  if (error.name === 'UrlError'){
+  if (error.name === 'UrlError') {
     return res.status(404).json({
       error: `cannot do ${req.method} on ${req.url}`
-    })
+    });
   }
 
   // bad request

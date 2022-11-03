@@ -1,44 +1,48 @@
 const router = require('express').Router();
 
-const { requireLogin } = require('../controllers/auth.cont')
-const { isOwner, shopById } = require('../controllers/shop.cont')
-const { 
-  listByShop, listLatest, listCategories, listRelated, photo, defaultPhoto,
-  list, read, create, update, remove, productById 
-} = require('../controllers/product.cont')
+const { requireLogin } = require('../controllers/auth.cont');
+const { isOwner, shopById } = require('../controllers/shop.cont');
+const {
+  list,
+  read,
+  create,
+  update,
+  remove,
+  productById,
+  listByShop,
+  listLatest,
+  listCategories,
+  listRelated,
+  photo,
+  defaultPhoto
+} = require('../controllers/product.cont');
 
-router.route('/products/by/:shopId')
+router
+  .route('/products/by/:shopId')
   .get(listByShop)
-  .post(requireLogin, isOwner, create)
- 
+  .post(requireLogin, isOwner, create);
 
-router.route('/products/latest')
-  .get(listLatest)
+router.route('/products/latest').get(listLatest);
 
-router.route('/products/related/:productId')
-  .get(listRelated)
+router.route('/products/related/:productId').get(listRelated);
 
-router.route('/products/categories')
-  .get(listCategories)
+router.route('/products/categories').get(listCategories);
 
-router.route('/products')
-  .get(list)
+router.route('/products').get(list);
 
-router.route('/product/:productId')
-  .get(read)
+router.route('/product/:productId').get(read);
 
-router.route('/product/:shopId/:productId')
+router
+  .route('/product/:shopId/:productId')
   .patch(requireLogin, isOwner, update)
-  .delete(requireLogin, isOwner, remove)
+  .delete(requireLogin, isOwner, remove);
 
-router.route('/product/image/:productId')
-  .get(photo, defaultPhoto)
+router.route('/product/image/:productId').get(photo, defaultPhoto);
 
-router.route('/products/defaultphoto')
-  .get(defaultPhoto)
+router.route('/products/defaultphoto').get(defaultPhoto);
 
-// 
-router.param('shopId', shopById)
-router.param('productId', productById)
+//
+router.param('shopId', shopById);
+router.param('productId', productById);
 
-module.exports = { productRoute: router }
+module.exports = { productRoute: router };

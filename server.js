@@ -1,4 +1,4 @@
-/auth.route// require('express-async-errors');
+require('express-async-errors');
 require('dotenv').config({
   path: './config/config.env'
 });
@@ -6,9 +6,8 @@ require('dotenv').config({
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 
 const { connectMDB } = require('./config/db');
@@ -18,8 +17,8 @@ const { UrlError } = require('./helpers/url.error');
 
 const { authRoute } = require('./routes/auth.route');
 const { userRoute } = require('./routes/user.route');
-const { productRoute } = require('./routes/product.route')
-const { shopRoute } = require('./routes/shop.route')
+const { productRoute } = require('./routes/product.route');
+const { shopRoute } = require('./routes/shop.route');
 
 connectMDB().catch(err => console.error('connect-MongoDB Error', err.stack));
 
@@ -36,7 +35,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
-app.use('/auth', authRoute)
+app.use('/auth', authRoute);
 app.use('/api', [userRoute, shopRoute, productRoute]);
 
 app.all('*', (req, res, next) => {
