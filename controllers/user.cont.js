@@ -115,4 +115,25 @@ const isSeller = (req, res, next) => {
   return next();
 };
 
-module.exports = { read, list, update, remove, userById, isSeller };
+const stripeCustomer = (req, res, next) => {
+  console.log('stripeCustomer');
+
+  next();
+};
+
+const createCharge = (req, res, next) => {
+  console.log('createCharge');
+
+  next();
+};
+
+module.exports = {
+  read,
+  list,
+  update,
+  remove,
+  userById,
+  isSeller,
+  stripeCustomer,
+  createCharge
+};

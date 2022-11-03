@@ -251,10 +251,14 @@ const defaultPhoto = (req, res, next) => {
 };
 
 const decreaseQuantity = async (req, res, next) => {
-  return res.json('dec');
+  console.log('dec');
+
+  next();
 };
 const increaseQuantity = async (req, res, next) => {
-  return res.json('inc');
+  console.log('inc');
+
+  next();
 };
 
 module.exports = {
@@ -269,5 +273,7 @@ module.exports = {
   listRelated,
   productById,
   photo,
+  decreaseQuantity,
+  increaseQuantity,
   defaultPhoto
 };
