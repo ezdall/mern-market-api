@@ -24,8 +24,12 @@ router.route('/products/categories')
 router.route('/products')
   .get(list)
 
-router.route('/products/:productId')
+router.route('/product/:productId')
   .get(read)
+
+router.route('/product/:shopId/:productId')
+  .patch(requireLogin, isOwner, update)
+  .delete(requireLogin, isOwner, remove)
 
 router.route('/product/image/:productId')
   .get(photo, defaultPhoto)
@@ -33,10 +37,7 @@ router.route('/product/image/:productId')
 router.route('/product/defaultphoto')
   .get(defaultPhoto)
 
-router.route('/product/:shopId/:productId')
-  .put(requireLogin, isOwner, update)
-  .delete(requireLogin, isOwner, remove)
-
+// 
 router.param('shopId', shopById)
 router.param('productId', productById)
 

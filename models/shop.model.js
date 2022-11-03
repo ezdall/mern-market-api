@@ -1,4 +1,4 @@
-import { Schema, model } = require('mongoose')
+const { Schema, model } = require('mongoose')
 
 const shopSchema = new Schema({
   name: {
@@ -18,6 +18,9 @@ const shopSchema = new Schema({
     type: Schema.ObjectId, 
     ref: 'user'
   }
-})
+},
+ // other options
+ { timestamps: true, versionKey: false }
+)
 
 module.exports = model('shop', shopSchema)

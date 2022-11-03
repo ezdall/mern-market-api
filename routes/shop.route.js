@@ -9,8 +9,9 @@ router.get('/shops', list)
 router.get('/shop/:shopId', read)
 
 router.route('/shops/by/:userId')
- 	.get(requireLogin, hasAuth, listByOwner)
   .post(requireLogin, hasAuth, isSeller, create)
+ 	.get(requireLogin, hasAuth, listByOwner)
+  
  
 router.route('/shops/:shopId')
   .patch(requireLogin, isOwner, update)

@@ -11,14 +11,13 @@ const { Unauthorized401 } = require('../helpers/unauthorized.error');
 const { Forbidden403 } = require('../helpers/forbidden.error')
 const { NotFound404 } = require('../helpers/not-found.error');
 
-
 const read = (req,res,next) => {
-	const user = req.profile
+	const user = req.profile.toObject()
 
 	user.password = undefined;
 	user.salt = undefined;
 
-	return res.json({ user: user.toObject() })
+	return res.json({ user })
 }
 
 const list = async (req, res, next) => {
@@ -36,21 +35,22 @@ const list = async (req, res, next) => {
 const update = async (req, res, next) => {
 	 try {
 	 	const { name, email, password, seller } = req.body
-    const user = req.profile
+    let user = req.profile
     
     if(!user) return next(new NotFound404('no user found @update'))
 
-    // user = _.extend(user, req.body)
+    user = _.extend(user, req.body)
     
   	if(password){
   		const salt = await genSalt();
 
+      use.salt = salt
   		user.password = await hash(password, salt)
   	}
 
-  	user.name = name || user.name;
-  	user.email = email || user.email;
-    user.seller = seller ?? user.seller;
+  	// user.name = name || user.name;
+  	// user.email = email || user.email;
+   //  user.seller = seller ?? user.seller;
 
     await user.save()
     
@@ -91,7 +91,7 @@ const userById = async (req, res, next, userId) => {
     const user = await User.findById(userId).exec()
 
     if (!user) return next(new NotFound404('User not found @userById'))
-    
+
     req.profile = user
 
     next()
@@ -100,11 +100,12 @@ const userById = async (req, res, next, userId) => {
   }
 }
 
+//  need to transfer
 const isSeller = (req, res, next) => {
-	const { seller } = req.profile
+	const { seller,name } = req.profile
 	const isSeller = seller && typeof seller === 'boolean'
 
-	if(!isSeller) return next(new Forbidden403('user is not a seller @isSeller'))
+	if(!isSeller) return next(new Forbidden403(`${name} is not a seller @isSeller`))
 
 	return next()
 }
