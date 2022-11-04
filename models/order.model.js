@@ -1,9 +1,9 @@
 const { Schema, model } = require('mongoose');
 
 const cartItemSchema = new Schema({
-  product: { type: Schema.ObjectId, ref: 'Product' },
+  product: { type: Schema.ObjectId, ref: 'product' },
   quantity: Number,
-  shop: { type: Schema.ObjectId, ref: 'Shop' },
+  shop: { type: Schema.ObjectId, ref: 'shop' },
   status: {
     type: String,
     default: 'Not processed',
@@ -11,7 +11,7 @@ const cartItemSchema = new Schema({
   }
 });
 
-const CartItem = model('CartItem', cartItemSchema);
+const CartItem = model('cartItem', cartItemSchema);
 
 const orderSchema = new Schema(
   {
@@ -41,6 +41,6 @@ const orderSchema = new Schema(
   { timestamps: true, versionKey: false }
 );
 
-const Order = model('product', orderSchema);
+const Order = model('order', orderSchema);
 
 module.exports = { Order, CartItem };

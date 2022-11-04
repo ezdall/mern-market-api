@@ -36,6 +36,11 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
+// for /, /index, /index.html
+app.get('^/$|/index(.html)?', (req, res) => {
+  return res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 app.use('/auth', authRoute);
 app.use('/api', [userRoute, shopRoute, productRoute, orderRoute]);
 
