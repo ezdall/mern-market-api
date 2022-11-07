@@ -14,6 +14,7 @@ const { BadRequest400 } = require('../helpers/bad-request.error');
 const { Unauthorized401 } = require('../helpers/unauthorized.error');
 const { Forbidden403 } = require('../helpers/forbidden.error');
 const { NotFound404 } = require('../helpers/not-found.error');
+const { isMongoObj } = require('../helpers/is-mongo-obj')
 
 const list = async (req, res, next) => {
   try {
@@ -57,6 +58,8 @@ const read = (req, res, next) => {
 const create = (req, res, next) => {
   // only allowed 'multipar/form-data' (formidable)
   // reject 'json' and 'form-urlencoded'
+  console.log(req.body)
+
   if (!req.is('multipart/form-data')) {
     return next(new BadRequest400('invalid form'));
   }
@@ -68,6 +71,8 @@ const create = (req, res, next) => {
 
   return form.parse(req, async (err, fields, files) => {
     if (err) return next(err);
+    console.log({files}) // image
+    console.log({fields}) // name, desc
     try {
       const shop = new Shop(fields);
 
@@ -77,11 +82,18 @@ const create = (req, res, next) => {
         if (files.image?.size > 1000000) {
           return next(new BadRequest400('max 2mb image size '));
         }
-        shop.image.data = fs.readFileSync(files.image.path);
-        shop.image.contentType = files.image.type;
+
+        if(!files.image.filepath || !files.image.mimetype){
+          return next(new BadRequest400('lack image info @createShop-file-image'))
+        }
+
+        shop.image.data = fs.readFileSync(files.image.filepath); // 'path' to 'filepath'
+        shop.image.contentType = files.image.mimetype; // 'type' to 'mimetype'
       }
 
       const result = await shop.save();
+      // console.log(isMongoObj(result))
+
       return res.status(201).json(result);
     } catch (error) {
       return next(error);
