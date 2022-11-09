@@ -22,7 +22,7 @@ const list = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!shops?.length) return next(new NotFound404('no shops @list-shop'));
+    if (!shops) return next(new NotFound404('no shops @list-shop'));
 
     return res.json(shops);
   } catch (err) {
@@ -37,7 +37,7 @@ const listByOwner = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!shops?.length) return next(new NotFound404('no shops @list-by-owner'));
+    if (!shops) return next(new NotFound404('no shops @list-by-owner'));
 
     return res.json(shops);
   } catch (err) {

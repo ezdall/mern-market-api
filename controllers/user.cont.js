@@ -27,7 +27,7 @@ const list = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!users?.length) return next(new NotFound404('no users @list'));
+    if (!users) return next(new NotFound404('no users @list'));
 
     return res.json(users);
   } catch (err) {

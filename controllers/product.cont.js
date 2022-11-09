@@ -68,7 +68,7 @@ const list = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!products?.length) {
+    if (!products) { // products?.length
       return next(new NotFound404('no products @listProds'));
     }
 
@@ -79,7 +79,7 @@ const list = async (req, res, next) => {
 };
 
 const read = (req, res, next) => {
-  const prod = req.product.toObject();
+  const prod = req.product;
 
   prod.image = undefined;
 
@@ -168,7 +168,7 @@ const listLatest = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!products?.length) {
+    if (!products) { // !products?.length
       return next(new NotFound404('no products @listLatest'));
     }
 
@@ -186,7 +186,7 @@ const listByShop = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!products?.length) {
+    if (!products) {// !products?.length
       return next(new NotFound404('no products @listByShop'));
     }
 
@@ -202,7 +202,7 @@ const listCategories = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!products?.length) {
+    if (!products) {
       return next(new NotFound404('no products @listCategories'));
     }
 
@@ -223,7 +223,7 @@ const listRelated = async (req, res, next) => {
       .lean()
       .exec();
 
-    if (!products?.length) {
+    if (!products) {
       return next(new NotFound404('no products @listRelated'));
     }
 

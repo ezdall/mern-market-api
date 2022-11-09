@@ -29,6 +29,10 @@ const register = async (req, res, next) => {
       return next(new BadRequest400('valid fields are required @register'));
     }
 
+    // if(password?.length < 6){
+    //   return next(new BadRequest400('password must be at least 5 char @register'))
+    // }
+
     // async-hash
     const salt = await genSalt();
     const hashPass = await hash(password, salt);
@@ -61,9 +65,15 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+    console.log({...req.body})
+
     if (!email || !password) {
       return next(new BadRequest400('all field required @login'));
     }
+
+    //  if(password?.length < 6){
+    //   return next(new BadRequest400('password must be at least 5 char @register'))
+    // }
 
     // exec bcoz we need to validatePassword
     const user = await User.findOne({ email }).exec();
@@ -83,6 +93,7 @@ const login = async (req, res, next) => {
     // generate a access token
     const accessToken = jwt.sign(
       {
+        _id: user._id,
         email: user.email,
         seller: user.seller
       },
@@ -102,7 +113,7 @@ const login = async (req, res, next) => {
     await res.cookie('jwt', refreshToken, {
       httpOnly: true, // accessible only by webserver
       // secure: true, // https
-      sameSite: 'None', // cross-site cookie
+      // sameSite: 'None', // cross-site cookie
       maxAge: 7 * 24 * 60 * 60 * 1000 //
     });
 
@@ -142,21 +153,44 @@ const logout = async (req, res, next) => {
 
 // checks and decoder of "Bearer xxx" req.headers.authorization
 // then "Mount" data to req.auth
-// const requireLogin = expressJwt({
-// 	secret: process.env.ACCESS_SECRET,
-// 	algorithms: ['HS256'],
-// 	requestProperty: 'auth'
-// })
+const requireLogin = expressJwt({
+	secret: process.env.ACCESS_SECRET,
+	algorithms: ['HS256'],
+	requestProperty: 'auth'
+})
 
 // temp
-const requireLogin = (req, res, next) => {
-  console.log('-requireLogin-');
-  return next();
-};
+// const requireLogin = (req, res, next) => {
+//   console.log('-requireLogin-');
+//   return next();
+// };
 
+
+// for authorization
 const hasAuth = (req, res, next) => {
-  console.log('-hasAuth-');
-  return next();
+    // req.profile._id is ObjectId(mongoose-id)
+    //  req.auth._id is String
+
+    console.log('hasAuth')
+    // console.log({...req.auth})
+
+    const authorized =
+      req.profile &&
+      req.auth &&
+      String(req.profile._id) === String(req.auth._id);
+
+    if (!authorized) {
+      return next(new Forbidden403('Forbidden! @isAuth'))
+    }
+    return next();
 };
 
-module.exports = { login, register, logout, hasAuth, requireLogin };
+const hdrChk = (req, res, next) =>{
+
+  const authHeaders  = req.headers.authorization || req.headers.Authorization
+  console.log({authHeaders})
+
+  next()
+}
+
+module.exports = { hdrChk, login, register, logout, hasAuth, requireLogin };
