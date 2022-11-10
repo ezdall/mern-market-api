@@ -5,6 +5,7 @@ const _extend = require('lodash/extend');
 const { IncomingForm } = require('formidable');
 
 const Shop = require('../models/shop.model');
+const Product = require('../models/product.model')
 
 // const defaultImage = require('../dist/img/default.jpg')
 // import defaultImage from '../dist/img/default.jpg';
@@ -48,7 +49,7 @@ const listByOwner = async (req, res, next) => {
 const read = (req, res, next) => {
   if (!req.shop) return next(new NotFound404('no shop'));
 
-  const shop = req.shop.toObject();
+  const shop = req.shop
 
   shop.image = undefined;
 
@@ -120,9 +121,19 @@ const update = async (req, res, next) => {
       shop = _extend(shop, fields);
 
       if (files.image) {
-        shop.image.data = fs.readFileSync(files.image.path);
-        shop.image.contentType = files.image.type;
+  
+        if (files.image?.size > 1000000) {
+          return next(new BadRequest400('max 2mb image size '));
+        }
+
+        if(!files.image.filepath || !files.image.mimetype){
+          return next(new BadRequest400('lack image info @updShop-file-image'))
+        }
+
+        shop.image.data = fs.readFileSync(files.image.filepath); // 'path' to 'filepath'
+        shop.image.contentType = files.image.mimetype; // 'type' to 'mimetype'
       }
+
 
       const result = await shop.save();
 
@@ -142,6 +153,13 @@ const remove = async (req, res, next) => {
     const { shop } = req;
 
     if (!shop) return next(new NotFound404('shop not found @delShop'));
+    // add cannot delete if has product
+    // return 
+    const product = await Product.findOne({shop: shop._id}).lean().exec()
+
+    if(product){
+      return next(new BadRequest400('shop has product'));
+    }
 
     const deletedShop = shop.deleteOne();
 
@@ -152,15 +170,15 @@ const remove = async (req, res, next) => {
 };
 
 const isOwner = (req, res, next) => {
-  // const { shop, auth } = req
+  const { shop, auth } = req
 
-  // const isOwner = shop && auth && shop.owner._id == auth._id
+  const isOwner = shop && auth && String(shop.owner?._id) === String(auth._id)
 
-  //  if(!isOwner){
-  //    return next(new Forbidden403('forbidden! not owner'))
-  //  }
+   if(!isOwner){
+     return next(new Forbidden403('forbidden! not owner'))
+   }
 
-  console.log('isOwner');
+  // console.log('isOwner');
   return next();
 };
 
@@ -199,9 +217,6 @@ const photo = (req, res, next) => {
 };
 
 const defaultPhoto = async (req, res, next) => {
-  // console.log(`${process.cwd()}${defaultImage}`)
-  // console.log(process.cwd())
-  // return res.sendFile(path.resolve)
   res.sendFile(path.resolve(__dirname, '..', 'dist', 'img', 'default.jpg'));
 };
 

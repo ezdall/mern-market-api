@@ -33,8 +33,13 @@ const create = async (req, res, next) => {
         if (files.image?.size > 1000000) {
           return next(new BadRequest400('max 2mb image size '));
         }
-        product.image.data = fs.readFileSync(files.image.path);
-        product.image.contentType = files.image.type;
+
+        if(!files.image.filepath || !files.image.mimetype){
+          return next(new BadRequest400('lack image info @crtProd-file-image'))
+        }
+
+        product.image.data = fs.readFileSync(files.image.filepath); // 'path' to 'filepath'
+        product.image.contentType = files.image.mimetype; // 'type' to 'mimetype'
       }
       const result = await product.save();
 
@@ -49,6 +54,7 @@ const create = async (req, res, next) => {
   });
 };
 
+// all product
 const list = async (req, res, next) => {
   try {
     const query = {};
@@ -105,8 +111,13 @@ const update = (req, res, next) => {
       prod = _extend(prod, fields);
 
       if (files.image) {
-        prod.image.data = fs.readFileSync(files.image.path);
-        prod.image.contentType = files.image.type;
+
+        if(!files.image.filepath || !files.image.mimetype){
+          return next(new BadRequest400('lack image info @updProd-file-image'))
+        }
+
+        prod.image.data = fs.readFileSync(files.image.filepath); // 'path' to 'filepath'
+        prod.image.contentType = files.image.mimetype; // 'type' to 'mimetype'
       }
 
       const result = await prod.save();
@@ -122,6 +133,7 @@ const update = (req, res, next) => {
   });
 };
 
+//  add cant remove if has order
 const remove = async (req, res, next) => {
   try {
     const prod = req.product;
@@ -163,7 +175,7 @@ const listLatest = async (req, res, next) => {
   try {
     const products = await Product.find({})
       .populate({ path: 'shop', select: '_id name' })
-      .sort({ created: 'desc' })
+      .sort({ createdAt: 'desc' })
       .limit(5)
       .lean()
       .exec();
@@ -215,13 +227,15 @@ const listCategories = async (req, res, next) => {
 const listRelated = async (req, res, next) => {
   try {
     const products = await Product.find({
-      _id: { $ne: req.product },
+      _id: { $ne: req.product._id },
       category: req.product.category
     })
       .populate({ path: 'shop', select: 'name' })
       .limit(5)
       .lean()
       .exec();
+
+      console.log(products)
 
     if (!products) {
       return next(new NotFound404('no products @listRelated'));

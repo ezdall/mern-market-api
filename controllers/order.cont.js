@@ -49,6 +49,7 @@ const update = async (req, res, next) => {
     // maybe use _extend
     // cant bcoz cartItem not mounted. ex. req.cart
 
+    // update using .save() 
     const order = await Order.updateOne(
       { 'products._id': cartItemId },
       {
@@ -73,7 +74,7 @@ const listByShop = async (req, res, next) => {
     const orders = await Order.find({ 'products.shop': req.shop._id })
       // show product
       .populate({ path: 'products.product', select: 'name price' })
-      .sort('-created')
+      .sort('-createdAt')
       .lean()
       .exec();
 
@@ -90,7 +91,7 @@ const listByUser = async (req, res, next) => {
 
     const orders = await Order.find({ user: req.profile._id })
       .populate({ path: 'products.product', select: 'name price' })
-      .sort('-created')
+      .sort('-createdAt')
       .lean()
       .exec();
 
