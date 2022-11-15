@@ -4,6 +4,7 @@ const { genSalt, hash } = require('bcrypt');
 
 // model
 const User = require('../models/user.model');
+const Shop = require('../models/shop.model')
 
 // helper
 const { BadRequest400 } = require('../helpers/bad-request.error');
@@ -70,12 +71,18 @@ const remove = async (req, res, next) => {
   try {
     const user = req.profile;
 
-    if (!user) return next(new NotFound404('no user found @remove'));
+    if (!user) return next(new NotFound404('no user found @remove-user'));
+
+    const shop = await Shop.findOne({owner: user._id}).lean().exec()
+
+    if(shop){
+      return next(new BadRequest400('user has shop @remove-user'))
+    }
 
     const deletedUser = await user.deleteOne();
 
     if (!deletedUser)
-      return next(new BadRequest400('invalid delete user @remove'));
+      return next(new BadRequest400('invalid delete user @remove-user'));
 
     deletedUser.password = undefined;
     deletedUser.salt = undefined;

@@ -28,7 +28,8 @@ const errorHandler = (error, req, res, next) => {
   // redundant error.name??
   if (error.name === 'UnauthorizedError') {
     return res.status(401).json({
-      error: `${error.name} : ${error.message}`
+      error: `${error.name} : ${error.message}`,
+      inner: error.inner
     });
   }
 

@@ -9,6 +9,7 @@ const User = require('../models/user.model');
 const { BadRequest400 } = require('../helpers/bad-request.error');
 const { Unauthorized401 } = require('../helpers/unauthorized.error');
 const { NotFound404 } = require('../helpers/not-found.error');
+const { Forbidden403 } = require('../helpers/forbidden.error')
 
 /**
  * @desc Register

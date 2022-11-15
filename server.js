@@ -9,6 +9,7 @@ const cors = require('cors');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
+const helmet = require('helmet')
 
 const { connectMDB } = require('./config/db');
 const { corsOptions } = require('./config/cors-options');
@@ -33,6 +34,7 @@ app.use(morgan('dev'));
 app.use(express.json()); // parse req.body
 app.use(cookieParser()); // parse req.cookies
 app.use(express.urlencoded({ extended: true }));
+app.use(helmet())
 
 app.use('/dist', express.static(path.join(__dirname, 'dist')));
 
